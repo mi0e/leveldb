@@ -11,12 +11,14 @@ jobs:
       matrix:
         compiler: [msvc]
         optimized: [true, false]
+
     env:
       CMAKE_BUILD_DIR: ${{ github.workspace }}\build
       CMAKE_BUILD_TYPE: ${{ matrix.optimized && 'RelWithDebInfo' || 'Debug' }}
       BINARY_SUFFIX: .exe
       BINARY_PATH: >-
         ${{ format('{0}\build\{1}\', github.workspace, matrix.optimized && 'RelWithDebInfo' || 'Debug') }}
+
     steps:
       - uses: actions/checkout@v2
         with:
@@ -32,6 +34,9 @@ jobs:
           cmake --build "${{ env.CMAKE_BUILD_DIR }}"
           --config "${{ env.CMAKE_BUILD_TYPE }}"
 
-      - name: List built executables
-        run: |
-          Get-ChildItem -Path "${{ env.CMAKE_BUILD_DIR }}" -Filter *.exe -Recurse
+      - name: Upload executables
+        uses: actions/upload-artifact@v4
+        with:
+          name: leveldb-exe-${{ matrix.CMAKE_BUILD_TYPE }}
+          path: |
+            ${{ env.CMAKE_BUILD_DIR }}/**/*.exe
